@@ -7,8 +7,7 @@ import '../../../../core/widgets/app_bottom_nav.dart';
 import '../../domain/job.dart';
 import '../widgets/job_card.dart';
 
-const _lavender = Color(0xFFF2F2FC);
-const _routeName = 'Riyadh Central';
+const _crimson = Color(0xFFDC1F3C);
 
 class JobDetailsScreen extends StatelessWidget {
   const JobDetailsScreen({super.key, required this.job});
@@ -19,15 +18,25 @@ class JobDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final where = _isPickup ? 'Pickup' : 'Delivery';
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F0FC),
+      backgroundColor: const Color(0xFFF8F5FF),
       appBar: AppBar(
-        backgroundColor: jobMaroon,
         foregroundColor: Colors.white,
         centerTitle: false,
         automaticallyImplyLeading: false,
         toolbarHeight: 64,
         titleSpacing: 12,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [jobMaroon, _crimson],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
+        ),
         title: Row(
           children: [
             InkWell(
@@ -37,10 +46,10 @@ class JobDetailsScreen extends StatelessWidget {
               child: const SizedBox(
                 width: 36,
                 height: 40,
-                child: Icon(Icons.arrow_back, color: Colors.white),
+                child: Icon(Icons.chevron_left, size: 30, color: Colors.white),
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -49,7 +58,7 @@ class JobDetailsScreen extends StatelessWidget {
                     style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                 Text(
-                  '• ${job.reference} • ${job.typeLabel.toUpperCase()}',
+                  '${job.reference} • ${job.typeLabel}',
                   style: const TextStyle(
                       fontSize: 10, fontWeight: FontWeight.w700),
                 ),
@@ -63,11 +72,11 @@ class JobDetailsScreen extends StatelessWidget {
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: () => context.push(AppRoutes.profile),
-              child: const CircleAvatar(
+              child: CircleAvatar(
                 radius: 16,
-                backgroundColor: Color(0xFF6E0721),
-                child:
-                    Icon(Icons.person_outline, color: Colors.white, size: 18),
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                child: const Icon(Icons.person_outline,
+                    color: Colors.white, size: 18),
               ),
             ),
           ),
@@ -76,125 +85,92 @@ class JobDetailsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(14),
         children: [
-          _card(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    _Tag(
-                      job.typeLabel,
-                      icon: _isPickup
-                          ? Icons.inventory_2_outlined
-                          : Icons.local_shipping_outlined,
-                    ),
-                    const SizedBox(width: 6),
-                    _Tag(job.statusLabel),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  job.referenceLabel,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    letterSpacing: 0.6,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  job.reference,
-                  style: const TextStyle(
-                      fontSize: 26, fontWeight: FontWeight.w800),
-                ),
-              ],
-            ),
+          _Section(
+            icon: Icons.calendar_month_outlined,
+            title: _isPickup ? 'Booking' : 'Shipment',
+            titleColor: AppColors.textDark,
+            trailing: _StatusChip(job.statusLabel),
+            children: [
+              _Field(job.referenceLabel, job.reference),
+              _Field('ACCOUNT NUMBER', job.accountNumber),
+              _Pair(
+                _Field('SERVICE CODE', job.serviceCode),
+                _Field('DIRECTION', job.direction),
+              ),
+              _Field('SERVICE SCOPE', job.serviceScope),
+            ],
           ),
-          const SizedBox(height: 12),
-          _card(
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFBE3E8),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.alt_route, color: jobMaroon),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              'Route: ${job.routeCode}',
-                              style: const TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w800),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Icon(Icons.circle, size: 6, color: jobMaroon),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${job.zone} • $_routeName',
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.accent),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text(
-                      'SCHEDULE',
-                      style: TextStyle(
-                        fontSize: 9,
-                        letterSpacing: 0.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    SizedBox(
-                      width: 80,
-                      child: Text(
-                        job.schedule,
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: jobMaroon,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          const SizedBox(height: 14),
+          _Section(
+            icon: Icons.location_on_outlined,
+            title: where,
+            titleColor: jobMaroon,
+            children: [
+              _Pair(
+                _Field('COUNTRY', job.country),
+                _Field('CITY', job.city),
+              ),
+              _Pair(
+                _Field('${where.toUpperCase()} AREA', job.areaName),
+                _Field('CONTACT NUMBER', job.contactNumber),
+              ),
+              _Pair(
+                _Field('${where.toUpperCase()} DATE', job.date),
+                _Field('TIME WINDOW', job.timeWindow),
+              ),
+              _Field('ADDRESS', job.address),
+              _Field('SHORT ADDRESS', job.shortAddress),
+            ],
           ),
-          const SizedBox(height: 12),
-          _card(_coreDetails()),
+          const SizedBox(height: 14),
+          _Section(
+            icon: Icons.inventory_2_outlined,
+            title: 'Booking Shipment',
+            titleColor: AppColors.textDark,
+            children: [
+              _Pair(
+                _Field('SHIPMENT TYPE', job.shipmentType),
+                _Field('PACKAGING TYPE', job.packagingType),
+              ),
+              _Pair(
+                _Field('EXPECTED PACKAGES', job.expectedPackages),
+                _Field('EXPECTED SHIPMENT', job.expectedShipment),
+              ),
+              _Pair(
+                _Field('EXPECTED WEIGHT', job.expectedWeight),
+                _Field('REMARKS', job.remarks, dot: true),
+              ),
+            ],
+          ),
           const SizedBox(height: 14),
         ],
       ),
       bottomNavigationBar: const AppBottomNav(current: NavTab.jobs),
     );
   }
+}
 
-  Widget _card(Widget child) {
+/// White card with an icon title, a divider, and spaced children.
+class _Section extends StatelessWidget {
+  const _Section({
+    required this.icon,
+    required this.title,
+    required this.titleColor,
+    required this.children,
+    this.trailing,
+  });
+
+  final IconData icon;
+  final String title;
+  final Color titleColor;
+  final List<Widget> children;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -206,223 +182,63 @@ class JobDetailsScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: child,
-    );
-  }
-
-  Widget _coreDetails() {
-    final dateLabel = _isPickup ? 'PICKUP DATE' : 'DELIVERY DATE';
-    final timeLabel = _isPickup ? 'PICKUP TIME' : 'DELIVERY TIME';
-    final refShort = _isPickup ? 'BOOKING NO.' : 'AWB NO.';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Row(
-          children: [
-            Icon(Icons.inventory_2_outlined, size: 20, color: jobMaroon),
-            SizedBox(width: 8),
-            Text('Core Booking Details',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _Field(
-                icon: Icons.receipt_long_outlined,
-                label: refShort,
-                value: job.reference,
-                bold: true,
-              ),
-            ),
-            Expanded(
-              child: _Field(
-                icon: Icons.chat_outlined,
-                label: 'BOOKING REMARKS',
-                value: job.remarks,
-                dot: true,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        _Field(
-          icon: Icons.location_city_outlined,
-          label: 'CITY NAME',
-          value: job.city,
-        ),
-        const SizedBox(height: 14),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: _lavender,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Expanded(
-                child: _Field(
-                  icon: Icons.alt_route,
-                  label: 'OPERATIONAL ROUTE CODE',
-                  value: job.routeCode,
-                  bold: true,
-                ),
-              ),
-              Text(
-                '${job.zone} • ${job.area.split(',').first}',
-                style: const TextStyle(
-                    fontSize: 10, color: AppColors.textMuted),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: _Field(
-                icon: Icons.inventory_outlined,
-                label: 'PACKAGING TYPE',
-                value: job.packaging,
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFEFF8),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                job.packageSummary,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textMuted,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _Field(
-                icon: Icons.calendar_today_outlined,
-                label: dateLabel,
-                value: job.date,
-              ),
-            ),
-            Expanded(
-              child: _Field(
-                icon: Icons.schedule,
-                label: timeLabel,
-                value: job.time,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        const _Label(icon: Icons.support_agent, text: 'ASSIGNED BY'),
-        const SizedBox(height: 6),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: _lavender,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 12,
-                backgroundColor: const Color(0xFFD8C8F7),
-                child: Text(
-                  _initials(job.assignedBy),
-                  style: const TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.accent,
-                  ),
-                ),
-              ),
+              Icon(icon, size: 20, color: jobMaroon),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  job.assignedBy,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 11),
+                  title,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: titleColor,
+                  ),
                 ),
               ),
-              Text(
-                job.assignedHub,
-                style:
-                    const TextStyle(fontSize: 10, fontWeight: FontWeight.w800),
-              ),
+              ?trailing,
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 8),
+          const Divider(height: 1, color: Color(0xFFEDEBF7)),
+          const SizedBox(height: 14),
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0) const SizedBox(height: 16),
+            children[i],
+          ],
+        ],
+      ),
     );
-  }
-
-  /// "Dispatch Ops - Sarah Al-Mansoor" -> "SA" (first two letters of the
-  /// person's name, taken after the dash).
-  static String _initials(String text) {
-    final name = text.contains('-') ? text.split('-').last.trim() : text.trim();
-    final words = name.split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
-    return words.take(2).map((w) => w[0].toUpperCase()).join();
   }
 }
 
-class _Label extends StatelessWidget {
-  const _Label({required this.icon, required this.text});
+class _Pair extends StatelessWidget {
+  const _Pair(this.left, this.right);
 
-  final IconData icon;
-  final String text;
+  final Widget left;
+  final Widget right;
 
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 13, color: AppColors.textMuted),
-        const SizedBox(width: 5),
-        Flexible(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 9,
-              letterSpacing: 0.5,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textMuted,
-            ),
-          ),
-        ),
+        Expanded(child: left),
+        const SizedBox(width: 12),
+        Expanded(child: right),
       ],
     );
   }
 }
 
 class _Field extends StatelessWidget {
-  const _Field({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.bold = false,
-    this.dot = false,
-  });
+  const _Field(this.label, this.value, {this.dot = false});
 
-  final IconData icon;
   final String label;
   final String value;
-  final bool bold;
   final bool dot;
 
   @override
@@ -430,7 +246,15 @@ class _Field extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _Label(icon: icon, text: label),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 9.5,
+            letterSpacing: 0.4,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textMuted,
+          ),
+        ),
         const SizedBox(height: 4),
         Row(
           children: [
@@ -441,10 +265,8 @@ class _Field extends StatelessWidget {
             Flexible(
               child: Text(
                 value,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
-                ),
+                style: const TextStyle(
+                    fontSize: 14.5, fontWeight: FontWeight.w800),
               ),
             ),
           ],
@@ -454,36 +276,26 @@ class _Field extends StatelessWidget {
   }
 }
 
-class _Tag extends StatelessWidget {
-  const _Tag(this.label, {this.icon});
+class _StatusChip extends StatelessWidget {
+  const _StatusChip(this.label);
 
   final String label;
-  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: const Color(0xFFE9E7FA),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 12, color: AppColors.accent),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: AppColors.accent,
-            ),
-          ),
-        ],
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: AppColors.accent,
+        ),
       ),
     );
   }

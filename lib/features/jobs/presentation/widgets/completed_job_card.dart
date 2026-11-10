@@ -209,24 +209,6 @@ class CompletedJobCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: ElevatedButton.icon(
-                onPressed: () => onAction('View Electronic POD & Receipt'),
-                icon: const Icon(Icons.receipt_long_outlined, size: 18),
-                label: const Text(
-                  'View Electronic POD & Receipt',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: jobMaroon,
-                  foregroundColor: Colors.white,
-                  shape: const StadiumBorder(),
-                ),
-              ),
-            ),
           ],
         ],
       ),

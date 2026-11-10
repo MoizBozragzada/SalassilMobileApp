@@ -64,6 +64,10 @@ class _JobsScreenState extends State<JobsScreen> {
                   context.push(AppRoutes.jobDetails, extra: job);
                   return;
                 }
+                if (action == 'Start Job' || action == 'Continue Job') {
+                  context.push(AppRoutes.jobProgress, extra: job);
+                  return;
+                }
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(

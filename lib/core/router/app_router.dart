@@ -6,6 +6,7 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/jobs/presentation/screens/completed_jobs_screen.dart';
 import '../../features/jobs/domain/job.dart';
 import '../../features/jobs/presentation/screens/job_details_screen.dart';
+import '../../features/jobs/presentation/screens/job_in_progress_screen.dart';
 import '../../features/jobs/presentation/screens/jobs_screen.dart';
 import '../../features/profile/presentation/screens/driver_profile_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
@@ -21,6 +22,7 @@ class AppRoutes {
   static const completedJobs = '/completed-jobs';
   static const profile = '/profile';
   static const jobDetails = '/jobs/details';
+  static const jobProgress = '/jobs/progress';
 }
 
 GoRouter buildRouter() => GoRouter(
@@ -57,6 +59,11 @@ GoRouter buildRouter() => GoRouter(
           redirect: (_, state) =>
               state.extra is Job ? null : AppRoutes.jobs,
           builder: (_, state) => JobDetailsScreen(job: state.extra! as Job),
+        ),
+        GoRoute(
+          path: AppRoutes.jobProgress,
+          redirect: (_, state) => state.extra is Job ? null : AppRoutes.jobs,
+          builder: (_, state) => JobInProgressScreen(job: state.extra! as Job),
         ),
         GoRoute(
           path: AppRoutes.profile,

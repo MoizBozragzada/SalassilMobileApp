@@ -18,6 +18,7 @@ class AppBottomNav extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final active = current != null;
+    final onHome = current == NavTab.home;
     return NavigationBar(
       backgroundColor: AppColors.background,
       indicatorColor: Colors.transparent,
@@ -38,10 +39,14 @@ class AppBottomNav extends ConsumerWidget {
               : const Icon(Icons.home_outlined),
           label: 'Home',
         ),
-        const NavigationDestination(
-          icon: Icon(Icons.assignment_outlined),
-          selectedIcon: Icon(Icons.assignment, color: AppColors.primary),
-          label: 'My Jobs',
+        // The Home design labels this tab "Jobs" with a truck icon; the job
+        // screens label it "My Jobs" with a clipboard.
+        NavigationDestination(
+          icon: Icon(onHome
+              ? Icons.local_shipping_outlined
+              : Icons.assignment_outlined),
+          selectedIcon: const Icon(Icons.assignment, color: AppColors.primary),
+          label: onHome ? 'Jobs' : 'My Jobs',
         ),
         const NavigationDestination(
           icon: Icon(Icons.logout),

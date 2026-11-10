@@ -29,7 +29,7 @@ class JobSummaryTile extends StatelessWidget {
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
-      elevation: highlighted ? 3 : 0.5,
+      elevation: 1,
       shadowColor: AppColors.accent.withValues(alpha: 0.2),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
