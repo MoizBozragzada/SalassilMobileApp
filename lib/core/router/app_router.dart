@@ -5,9 +5,11 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/jobs/presentation/screens/completed_jobs_screen.dart';
 import '../../features/jobs/domain/job.dart';
+import '../../features/jobs/presentation/screens/assigned_jobs_screen.dart';
 import '../../features/jobs/presentation/screens/job_details_screen.dart';
 import '../../features/jobs/presentation/screens/job_in_progress_screen.dart';
 import '../../features/jobs/presentation/screens/jobs_screen.dart';
+import '../../features/jobs/presentation/screens/shipment_view_screen.dart';
 import '../../features/profile/presentation/screens/driver_profile_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 
@@ -19,10 +21,12 @@ class AppRoutes {
   static const forgot = '/forgot-password';
   static const home = '/home';
   static const jobs = '/jobs';
+  static const assignedJobs = '/assigned-jobs';
   static const completedJobs = '/completed-jobs';
   static const profile = '/profile';
   static const jobDetails = '/jobs/details';
   static const jobProgress = '/jobs/progress';
+  static const shipmentView = '/jobs/shipments';
 }
 
 GoRouter buildRouter() => GoRouter(
@@ -49,6 +53,10 @@ GoRouter buildRouter() => GoRouter(
           builder: (_, _) => const JobsScreen(),
         ),
         GoRoute(
+          path: AppRoutes.assignedJobs,
+          builder: (_, _) => const AssignedJobsScreen(),
+        ),
+        GoRoute(
           path: AppRoutes.completedJobs,
           builder: (_, _) => const CompletedJobsScreen(),
         ),
@@ -64,6 +72,11 @@ GoRouter buildRouter() => GoRouter(
           path: AppRoutes.jobProgress,
           redirect: (_, state) => state.extra is Job ? null : AppRoutes.jobs,
           builder: (_, state) => JobInProgressScreen(job: state.extra! as Job),
+        ),
+        GoRoute(
+          path: AppRoutes.shipmentView,
+          redirect: (_, state) => state.extra is Job ? null : AppRoutes.jobs,
+          builder: (_, state) => ShipmentViewScreen(job: state.extra! as Job),
         ),
         GoRoute(
           path: AppRoutes.profile,

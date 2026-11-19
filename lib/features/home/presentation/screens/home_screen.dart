@@ -4,16 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/app_bottom_nav.dart';
-import '../../../profile/domain/driver_profile.dart';
+import '../../../../core/widgets/async_error_view.dart';
+import '../../../profile/presentation/providers/profile_provider.dart';
 import '../widgets/driver_card.dart';
 import '../widgets/job_summary_tile.dart';
 
 const _maroon = Color(0xFF9B0A30);
 
 /// Courier dashboard shown after login.
-///
-/// Driver details come from the placeholder profile until the backend
-/// endpoint is available.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -25,8 +23,8 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const p = sampleDriverProfile;
-    final initials = '${p.firstName[0]}${p.lastName[0]}'.toUpperCase();
+    final profileAsync = ref.watch(driverProfileProvider);
+    final p = profileAsync.value;
 
     return Scaffold(
       appBar: AppBar(
@@ -58,12 +56,14 @@ class HomeScreen extends ConsumerWidget {
                     const Text('Dashboard',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w800)),
-                    const SizedBox(width: 6),
-                    Text(
-                      '• ${p.routeCode}',
-                      style: const TextStyle(
-                          fontSize: 11, fontWeight: FontWeight.w700),
-                    ),
+                    if (p != null && p.routeCode != '-') ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        '• ${p.routeCode}',
+                        style: const TextStyle(
+                            fontSize: 11, fontWeight: FontWeight.w700),
+                      ),
+                    ],
                   ],
                 ),
                 const Text(
@@ -84,7 +84,7 @@ class HomeScreen extends ConsumerWidget {
                 radius: 18,
                 backgroundColor: const Color(0xFF6E0721),
                 child: Text(
-                  initials,
+                  p?.initials ?? '--',
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -96,52 +96,69 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          DriverCard(
-            onTap: () => context.push(AppRoutes.profile),
-            name: p.fullName,
-            id: p.employeeId,
-            role: '${p.position} • DXB',
-            shift: 'Shift A (07:00-16:00)',
-            routeCode: p.routeCode,
-            routeName: p.routeName,
-            onDuty: p.onDuty,
-          ),
-          const SizedBox(height: 16),
-          JobSummaryTile(
-            icon: Icons.assignment_outlined,
-            title: 'My Jobs',
-            subtitle: 'Active delivery routes today',
-            highlighted: true,
-            onTap: () => context.push(AppRoutes.jobs),
-          ),
-          const SizedBox(height: 14),
-          JobSummaryTile(
-            icon: Icons.verified_outlined,
-            title: 'Completed Jobs',
-            subtitle: 'Deliveries fulfilled today',
-            highlighted: false,
-            onTap: () => context.push(AppRoutes.completedJobs),
-          ),
-          const SizedBox(height: 14),
-          JobSummaryTile(
-            icon: Icons.bar_chart,
-            title: 'Analytics',
-            subtitle: 'Performance & trip metrics',
-            highlighted: true,
-            onTap: () => _comingSoon(context),
-          ),
-          const SizedBox(height: 14),
-          JobSummaryTile(
-            icon: Icons.warning_amber_rounded,
-            title: 'Report a Problem',
-            subtitle: 'Submit issue or vehicle feedback',
-            highlighted: false,
-            onTap: () => _comingSoon(context),
-          ),
-        ],
+      body: RefreshIndicator(
+        onRefresh: () => ref.refresh(driverProfileProvider.future),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          children: [
+            profileAsync.when(
+              data: (p) => DriverCard(
+                onTap: () => context.push(AppRoutes.profile),
+                name: p.fullName,
+                id: p.employeeId,
+                role: p.position,
+                shift: p.status,
+                routeCode: p.routeCode,
+                routeName: p.routeName,
+                onDuty: p.onDuty,
+              ),
+              loading: () => const SizedBox(
+                height: 150,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => SizedBox(
+                height: 220,
+                child: AsyncErrorView(
+                  message: e.toString(),
+                  onRetry: () => ref.invalidate(driverProfileProvider),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            JobSummaryTile(
+              icon: Icons.assignment_outlined,
+              title: 'My Jobs',
+              subtitle: 'Active delivery routes today',
+              highlighted: true,
+              onTap: () => context.push(AppRoutes.jobs),
+            ),
+            const SizedBox(height: 14),
+            JobSummaryTile(
+              icon: Icons.verified_outlined,
+              title: 'Completed Jobs',
+              subtitle: 'Deliveries fulfilled today',
+              highlighted: false,
+              onTap: () => context.push(AppRoutes.completedJobs),
+            ),
+            const SizedBox(height: 14),
+            JobSummaryTile(
+              icon: Icons.bar_chart,
+              title: 'Analytics',
+              subtitle: 'Performance & trip metrics',
+              highlighted: true,
+              onTap: () => _comingSoon(context),
+            ),
+            const SizedBox(height: 14),
+            JobSummaryTile(
+              icon: Icons.warning_amber_rounded,
+              title: 'Report a Problem',
+              subtitle: 'Submit issue or vehicle feedback',
+              highlighted: false,
+              onTap: () => _comingSoon(context),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: const AppBottomNav(current: NavTab.home),
     );

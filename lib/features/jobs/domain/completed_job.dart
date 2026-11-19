@@ -1,4 +1,4 @@
-import 'job.dart';
+﻿import 'job.dart';
 
 enum CompletedOutcome { delivered, exception }
 
@@ -24,7 +24,7 @@ class CompletedJob {
   final String area;
   final String zone;
 
-  /// e.g. "Delivered • E-Signature Captured".
+  /// e.g. "Delivered â€¢ E-Signature Captured".
   final String? note;
 
   /// Left label of the payment row, e.g. "COD Collected" or "Payment".
@@ -36,43 +36,37 @@ class CompletedJob {
   /// Highlighted value on the right in a white pill, e.g. "SAR 145.00".
   final String? paymentBadge;
 
-  /// Red alert strip, e.g. "Customer Unavailable • Rescheduled 16:00".
+  /// Red alert strip, e.g. "Customer Unavailable â€¢ Rescheduled 16:00".
   final String? alert;
+
+  /// Builds a card model from a completed [Job] returned by the API. The API
+  /// has no payment, e-signature or exception details, so those stay empty.
+  factory CompletedJob.fromJob(Job job) => CompletedJob(
+        type: job.type,
+        outcome: CompletedOutcome.delivered,
+        reference: job.reference,
+        timeText: _when(job.completedAt),
+        area: job.area,
+        zone: job.zone == '-' ? '' : job.zone,
+      );
+
+  static const _months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', //
+  ];
+
+  /// "Today, 11:15 AM" for today, otherwise "11 Nov, 11:15 AM".
+  static String _when(String? iso) {
+    final t = DateTime.tryParse(iso ?? '');
+    if (t == null) return '-';
+    final now = DateTime.now();
+    final h = t.hour % 12 == 0 ? 12 : t.hour % 12;
+    final clock =
+        '$h:${t.minute.toString().padLeft(2, '0')} ${t.hour < 12 ? 'AM' : 'PM'}';
+    final today = t.year == now.year && t.month == now.month && t.day == now.day;
+    return today ? 'Today, $clock' : '${t.day} ${_months[t.month - 1]}, $clock';
+  }
 
   String get referenceLabel =>
       type == JobType.pickup ? 'BOOKING NUMBER' : 'AIR WAYBILL NUMBER';
 }
-
-/// Placeholder data until the completed-jobs endpoint is available.
-const sampleCompletedJobs = <CompletedJob>[
-  CompletedJob(
-    type: JobType.delivery,
-    outcome: CompletedOutcome.delivered,
-    reference: 'AWB-771804',
-    timeText: 'Today, 11:15 AM',
-    area: 'Al Sulaimaniyah, Riyadh',
-    zone: 'Villa Entrance A',
-    paymentLabel: 'COD Collected',
-    paymentBadge: 'SAR 145.00 (POS Card)',
-  ),
-  CompletedJob(
-    type: JobType.delivery,
-    outcome: CompletedOutcome.delivered,
-    reference: 'AWB-772910',
-    timeText: 'Today, 10:40 AM',
-    area: 'Khanshila, Riyadh',
-    zone: 'Street 14',
-    note: 'Delivered • E-Signature Captured',
-    paymentLabel: 'Payment',
-    paymentValue: 'Prepaid (Online)',
-  ),
-  CompletedJob(
-    type: JobType.pickup,
-    outcome: CompletedOutcome.exception,
-    reference: 'BK-I-RI-0084',
-    timeText: '10:00 - 11:30',
-    area: 'Al Olaya, Riyadh',
-    zone: 'Office Tower 2',
-    alert: 'Customer Unavailable • Rescheduled 16:00',
-  ),
-];

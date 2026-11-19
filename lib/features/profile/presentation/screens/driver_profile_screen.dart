@@ -1,22 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_nav.dart';
+import '../../../../core/widgets/async_error_view.dart';
 import '../../domain/driver_profile.dart';
+import '../providers/profile_provider.dart';
 import '../widgets/profile_widgets.dart';
 
 const _maroon = Color(0xFF9B0A30);
 const _green = Color(0xFF12A36B);
 
-class DriverProfileScreen extends StatelessWidget {
+class DriverProfileScreen extends ConsumerWidget {
   const DriverProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    const p = sampleDriverProfile;
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ref.watch(driverProfileProvider).when(
+          data: _ProfileView.new,
+          loading: () => const _ProfileShell(
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (e, _) => _ProfileShell(
+            child: AsyncErrorView(
+              message: e.toString(),
+              onRetry: () => ref.invalidate(driverProfileProvider),
+            ),
+          ),
+        );
+  }
+}
 
+/// Header and nav shown while the profile is loading or failed to load.
+class _ProfileShell extends StatelessWidget {
+  const _ProfileShell({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF1F0FC),
+      appBar: AppBar(
+        backgroundColor: _maroon,
+        foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        toolbarHeight: 64,
+        titleSpacing: 12,
+        title: Row(
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () =>
+                  context.canPop() ? context.pop() : context.go(AppRoutes.home),
+              child: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(Icons.arrow_back, color: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text('Driver Profile',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          ],
+        ),
+      ),
+      body: child,
+      bottomNavigationBar: const AppBottomNav(current: null),
+    );
+  }
+}
+
+class _ProfileView extends StatelessWidget {
+  const _ProfileView(this.p);
+
+  final DriverProfile p;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F0FC),
       appBar: AppBar(
@@ -51,7 +114,9 @@ class DriverProfileScreen extends StatelessWidget {
                     style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                 Text(
-                  '${p.routeCode} • ${p.routeName}',
+                  p.routeName.isEmpty
+                      ? p.routeCode
+                      : '${p.routeCode} • ${p.routeName}',
                   style: const TextStyle(
                       fontSize: 11, fontWeight: FontWeight.w600),
                 ),
@@ -365,7 +430,9 @@ class DriverProfileScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${p.routeCode} (${p.routeName})',
+                      p.routeName.isEmpty
+                          ? p.routeCode
+                          : '${p.routeCode} (${p.routeName})',
                       style: const TextStyle(
                           fontSize: 13, fontWeight: FontWeight.w800),
                     ),

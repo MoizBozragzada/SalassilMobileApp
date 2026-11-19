@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../jobs/presentation/providers/jobs_provider.dart';
+import '../../../profile/presentation/providers/profile_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/brand_logo.dart';
@@ -55,6 +57,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             password: _password.text,
             rememberMe: _remember,
           );
+      // Drop any data cached for a previous user.
+      ref.invalidate(driverProfileProvider);
+      ref.invalidate(jobsProvider);
+      ref.invalidate(startedJobsProvider);
       if (mounted) context.go(AppRoutes.home);
     } catch (e) {
       if (mounted) {

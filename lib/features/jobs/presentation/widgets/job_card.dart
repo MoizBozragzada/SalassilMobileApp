@@ -6,9 +6,17 @@ import '../../domain/job.dart';
 const jobMaroon = Color(0xFF9B0A30);
 
 class JobCard extends StatelessWidget {
-  const JobCard({super.key, required this.job, required this.onAction});
+  const JobCard({
+    super.key,
+    required this.job,
+    required this.onAction,
+    this.started = false,
+  });
 
   final Job job;
+
+  /// True once the courier has started this job (locally or per the API).
+  final bool started;
 
   /// Called with the name of the tapped action.
   final void Function(String action) onAction;
@@ -16,8 +24,8 @@ class JobCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPickup = job.type == JobType.pickup;
-    final primaryAction =
-        job.status == JobStatus.inProgress ? 'Continue Job' : 'Start Job';
+    final isStarted = started || job.status == JobStatus.inProgress;
+    final primaryAction = isStarted ? 'View Progress' : 'Start Job';
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -49,7 +57,7 @@ class JobCard extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               _Tag(
-                label: job.statusLabel,
+                label: isStarted ? 'In Progress' : job.statusLabel,
                 fg: AppColors.textMuted,
                 bg: const Color(0xFFEFEFF8),
               ),
@@ -93,12 +101,14 @@ class JobCard extends StatelessWidget {
                             fontSize: 13, fontWeight: FontWeight.w800),
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '• ${job.zone}',
-                      style: const TextStyle(
-                          fontSize: 11, color: AppColors.textMuted),
-                    ),
+                    if (job.zone != '-') ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        '• ${job.zone}',
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textMuted),
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -114,14 +124,20 @@ class JobCard extends StatelessWidget {
                   height: 44,
                   child: ElevatedButton.icon(
                     onPressed: () => onAction(primaryAction),
-                    icon: const Icon(Icons.play_arrow_outlined, size: 18),
+                    icon: Icon(
+                      isStarted
+                          ? Icons.inventory_2_outlined
+                          : Icons.play_arrow_outlined,
+                      size: 18,
+                    ),
                     label: Text(
                       primaryAction,
                       style: const TextStyle(
                           fontSize: 13, fontWeight: FontWeight.w700),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: jobMaroon,
+                      backgroundColor:
+                          isStarted ? const Color(0xFF12A36B) : jobMaroon,
                       foregroundColor: Colors.white,
                       shape: const StadiumBorder(),
                     ),

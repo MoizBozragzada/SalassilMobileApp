@@ -55,8 +55,8 @@ class CompletedJobCard extends StatelessWidget {
                       bg: _softRed,
                       outlined: true,
                     )
-                  : const _Tag(
-                      label: 'Delivered',
+                  : _Tag(
+                      label: isPickup ? 'Picked Up' : 'Delivered',
                       fg: AppColors.textMuted,
                       bg: Color(0xFFEFEFF8),
                     ),
@@ -227,11 +227,13 @@ class CompletedJobCard extends StatelessWidget {
             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
           ),
         ),
-        const SizedBox(width: 6),
-        Text(
-          '• ${job.zone}',
-          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
-        ),
+        if (job.zone.isNotEmpty) ...[
+          const SizedBox(width: 6),
+          Text(
+            '• ${job.zone}',
+            style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+          ),
+        ],
       ],
     );
   }
